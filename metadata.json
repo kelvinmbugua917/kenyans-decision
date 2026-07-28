@@ -1,0 +1,6 @@
+{
+  "name": "Kenyans Decision",
+  "description": "An independent public opinion and discussion platform for Kenyans.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
