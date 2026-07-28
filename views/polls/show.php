@@ -107,97 +107,111 @@
 </div>
 
 <script>
-const rawResults = <?= json_encode($results) ?>;
+var rawResults = <?= json_encode($results) ?>;
 
-document.getElementById('county-filter')?.addEventListener('change', function(e) {
-    const county = e.target.value;
-    const warning = document.getElementById('sample-warning');
-    const container = document.getElementById('results-container');
+var countyFilter = document.getElementById('county-filter');
+if (countyFilter) {
+    countyFilter.addEventListener('change', function(e) {
+        var county = e.target.value;
+        var warning = document.getElementById('sample-warning');
+        var container = document.getElementById('results-container');
 
-    let totalCountyVotes = 0;
-    let countsMap = {};
+        var totalCountyVotes = 0;
+        var countsMap = {};
 
-    if (county === 'ALL') {
-        warning.classList.add('hidden');
-        window.location.reload();
-        return;
-    }
+        if (county === 'ALL') {
+            if (warning) warning.classList.add('hidden');
+            window.location.reload();
+            return;
+        }
 
-    const cData = rawResults.countyBreakdown[county] || {};
-    for (const optId in cData) {
-        countsMap[optId] = cData[optId];
-        totalCountyVotes += cData[optId];
-    }
+        var cData = (rawResults.countyBreakdown && rawResults.countyBreakdown[county]) || {};
+        for (var optId in cData) {
+            countsMap[optId] = cData[optId];
+            totalCountyVotes += cData[optId];
+        }
 
-    if (totalCountyVotes < 10) {
-        warning.classList.remove('hidden');
-    } else {
-        warning.classList.add('hidden');
-    }
-
-    rawResults.optionResults.forEach(opt => {
-        const row = container.querySelector(`[data-id="${opt.optionId}"]`);
-        if (!row) return;
-
-        const votes = countsMap[opt.optionId] || 0;
-        const pct = totalCountyVotes > 0 ? ((votes / totalCountyVotes) * 100).toFixed(1) : '0.0';
-
-        row.querySelector('.option-pct-label').innerHTML = `${pct}% <span class="text-slate-400 font-normal">(${votes} votes)</span>`;
-        row.querySelector('.option-bar').style.width = `${pct}%`;
-    });
-});
-
-document.getElementById('poll-show-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const form = e.target;
-    const btn = document.getElementById('poll-show-btn');
-    const alertBox = document.getElementById('show-alert');
-
-    const formData = new FormData(form);
-    const selectedOption = formData.get('optionId');
-
-    if (!selectedOption) {
-        alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200';
-        alertBox.innerText = 'Please select an option before submitting.';
-        alertBox.classList.remove('hidden');
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerHTML = 'Submitting...';
-
-    try {
-        const response = await fetch('/api/vote', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': formData.get('csrf_token')
-            },
-            body: JSON.stringify({
-                pollId: formData.get('pollId'),
-                optionId: selectedOption,
-                county: formData.get('county'),
-                fingerprint: localStorage.getItem('kd_voter_fp') || 'fp_' + Math.random().toString(36).substr(2, 9)
-            })
-        });
-
-        const data = await response.json();
-        if (response.ok && data.success) {
-            alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
-            alertBox.innerText = data.message || 'Vote recorded!';
-            alertBox.classList.remove('hidden');
-            setTimeout(() => window.location.reload(), 1200);
+        if (totalCountyVotes < 10) {
+            if (warning) warning.classList.remove('hidden');
         } else {
+            if (warning) warning.classList.add('hidden');
+        }
+
+        if (rawResults.optionResults && container) {
+            rawResults.optionResults.forEach(function(opt) {
+                var row = container.querySelector('[data-id="' + opt.optionId + '"]');
+                if (!row) return;
+
+                var votes = countsMap[opt.optionId] || 0;
+                var pct = totalCountyVotes > 0 ? ((votes / totalCountyVotes) * 100).toFixed(1) : '0.0';
+
+                var pctLabel = row.querySelector('.option-pct-label');
+                if (pctLabel) {
+                    pctLabel.innerHTML = pct + '% <span class="text-slate-400 font-normal">(' + votes + ' votes)</span>';
+                }
+                var bar = row.querySelector('.option-bar');
+                if (bar) {
+                    bar.style.width = pct + '%';
+                }
+            });
+        }
+    });
+}
+
+var pollShowForm = document.getElementById('poll-show-form');
+if (pollShowForm) {
+    pollShowForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var form = e.target;
+        var btn = document.getElementById('poll-show-btn');
+        var alertBox = document.getElementById('show-alert');
+
+        var formData = new FormData(form);
+        var selectedOption = formData.get('optionId');
+
+        if (!selectedOption) {
+            alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200';
+            alertBox.innerText = 'Please select an option before submitting.';
+            alertBox.classList.remove('hidden');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = 'Submitting...';
+
+        try {
+            var response = await fetch('/api/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': formData.get('csrf_token')
+                },
+                body: JSON.stringify({
+                    pollId: formData.get('pollId'),
+                    optionId: selectedOption,
+                    county: formData.get('county'),
+                    fingerprint: typeof getOrCreateVoterToken === 'function' ? getOrCreateVoterToken() : (localStorage.getItem('kd_voter_fp') || 'fp_default')
+                })
+            });
+
+            var data = await response.json();
+            if (response.ok && data.success) {
+                alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+                alertBox.innerText = data.message || 'Vote recorded!';
+                alertBox.classList.remove('hidden');
+                setTimeout(function() { window.location.reload(); }, 1200);
+            } else {
+                alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
+                alertBox.innerText = data.error || 'Failed to submit vote.';
+                alertBox.classList.remove('hidden');
+                btn.disabled = false;
+            }
+        } catch (err) {
             alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-            alertBox.innerText = data.error || 'Failed to submit vote.';
+            alertBox.innerText = 'Network error.';
             alertBox.classList.remove('hidden');
             btn.disabled = false;
         }
-    } catch (err) {
-        alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-        alertBox.innerText = 'Network error.';
-        alertBox.classList.remove('hidden');
-        btn.disabled = false;
-    }
-});
+    });
+}
 </script>

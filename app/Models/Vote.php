@@ -51,12 +51,19 @@ class Vote {
                 $riskScore = 'trusted';
             }
 
-            // Check if existing vote exists for this poll + voterHash
+            // Check if existing vote exists for this poll + voterHash or userId
+            $checkParams = ['poll_id' => $poll['id'], 'voter_hash' => $voterHash];
+            $userClause = "";
+            if ($userId) {
+                $userClause = " OR user_id = :user_id";
+                $checkParams['user_id'] = $userId;
+            }
+
             $checkStmt = $db->prepare("
                 SELECT id, option_id, risk_score FROM votes 
-                WHERE poll_id = :poll_id AND voter_hash = :voter_hash LIMIT 1
+                WHERE poll_id = :poll_id AND (voter_hash = :voter_hash{$userClause}) LIMIT 1
             ");
-            $checkStmt->execute(['poll_id' => $poll['id'], 'voter_hash' => $voterHash]);
+            $checkStmt->execute($checkParams);
             $existingVote = $checkStmt->fetch();
 
             if ($existingVote) {
@@ -129,7 +136,7 @@ class Vote {
         }
     }
 
-    public static function hasVoted(string $pollId, string $ip, string $deviceToken): array {
+    public static function hasVoted(string $pollId, string $ip, string $deviceToken, ?string $userId = null): array {
         $db = Database::getInstance();
         $config = require __DIR__ . '/../../config/config.php';
         $hmacKey = $config['security']['vote_hmac_key'] ?? 'kd_default_hmac_key';
@@ -137,12 +144,19 @@ class Vote {
         $ipHmac = hash_hmac('sha256', $ip, $hmacKey);
         $voterHash = hash_hmac('sha256', $ipHmac . '_' . $deviceToken . '_' . $pollId, $hmacKey);
 
+        $params = ['poll_id' => $pollId, 'voter_hash' => $voterHash];
+        $userClause = "";
+        if ($userId) {
+            $userClause = " OR user_id = :user_id";
+            $params['user_id'] = $userId;
+        }
+
         $stmt = $db->prepare("
             SELECT option_id FROM votes 
-            WHERE poll_id = :poll_id AND voter_hash = :voter_hash AND risk_score != 'blocked' 
+            WHERE poll_id = :poll_id AND (voter_hash = :voter_hash{$userClause}) AND risk_score != 'blocked' 
             LIMIT 1
         ");
-        $stmt->execute(['poll_id' => $pollId, 'voter_hash' => $voterHash]);
+        $stmt->execute($params);
         $row = $stmt->fetch();
 
         return [

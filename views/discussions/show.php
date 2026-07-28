@@ -73,38 +73,45 @@
 </div>
 
 <script>
-document.getElementById('like-btn')?.addEventListener('click', async function() {
-    try {
-        const res = await fetch('/api/discussions/<?= htmlspecialchars($discussion['id']) ?>/like', { method: 'POST' });
-        const data = await res.json();
-        if (data.likesCount !== undefined) {
-            document.getElementById('likes-count').innerText = data.likesCount;
+var likeBtn = document.getElementById('like-btn');
+if (likeBtn) {
+    likeBtn.addEventListener('click', async function() {
+        try {
+            var res = await fetch('/api/discussions/<?= htmlspecialchars($discussion['id']) ?>/like', { method: 'POST' });
+            var data = await res.json();
+            if (data.likesCount !== undefined) {
+                var countElem = document.getElementById('likes-count');
+                if (countElem) countElem.innerText = data.likesCount;
+            }
+        } catch (err) {}
+    });
+}
+
+var commentForm = document.getElementById('add-comment-form');
+if (commentForm) {
+    commentForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var formData = new FormData(e.target);
+
+        try {
+            var res = await fetch('/api/discussions/<?= htmlspecialchars($discussion['id']) ?>/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': formData.get('csrf_token')
+                },
+                body: JSON.stringify({ content: formData.get('content') })
+            });
+
+            var data = await res.json();
+            if (res.ok && data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to post comment');
+            }
+        } catch (err) {
+            alert('Network error');
         }
-    } catch (err) {}
-});
-
-document.getElementById('add-comment-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-
-    try {
-        const res = await fetch('/api/discussions/<?= htmlspecialchars($discussion['id']) ?>/comments', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': formData.get('csrf_token')
-            },
-            body: JSON.stringify({ content: formData.get('content') })
-        });
-
-        const data = await res.json();
-        if (res.ok && data.success) {
-            window.location.reload();
-        } else {
-            alert(data.error || 'Failed to post comment');
-        }
-    } catch (err) {
-        alert('Network error');
-    }
-});
+    });
+}
 </script>

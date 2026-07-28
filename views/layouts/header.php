@@ -11,13 +11,45 @@
     <meta property="og:description" content="What Do Kenyans Think? Participate anonymously in public opinion polls and view real-time county breakdowns.">
     <meta property="og:type" content="website">
     
-    <!-- Tailwind CSS v4 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Tailwind CSS CDN (v3 for cross-browser & Windows 8 compatibility) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <script>
+        function getOrCreateVoterToken() {
+            var fp = localStorage.getItem('kd_voter_fp');
+            if (!fp) {
+                fp = 'fp_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 11);
+                localStorage.setItem('kd_voter_fp', fp);
+            }
+            if (document.cookie.indexOf('kd_voter_token=') === -1) {
+                document.cookie = "kd_voter_token=" + fp + "; path=/; max-age=31536000; SameSite=Lax";
+            }
+            return fp;
+        }
+        getOrCreateVoterToken();
+    </script>
+
     <style>
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        /* Fallbacks for older browsers on Windows 8 / legacy engines */
+        .shadow-xs {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        button, input, select, textarea {
+            font-family: inherit;
+        }
+        /* Ensure primary emerald buttons stand out explicitly on old display drivers */
+        .bg-emerald-600 {
+            background-color: #059669;
+        }
+        .hover\:bg-emerald-700:hover {
+            background-color: #047857;
+        }
+        .text-white {
+            color: #ffffff;
         }
     </style>
 </head>

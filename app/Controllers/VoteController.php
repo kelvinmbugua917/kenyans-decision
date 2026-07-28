@@ -41,6 +41,9 @@ class VoteController {
     }
 
     public function status(Request $request, array $params): void {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $pollId = $params['pollId'] ?? $request->getParam('pollId');
         if (empty($pollId)) {
             Response::json(['error' => 'Poll ID required'], 400);
@@ -48,8 +51,9 @@ class VoteController {
 
         $ip = $request->getClientIp();
         $deviceToken = $request->getDeviceToken();
+        $user = $_SESSION['user'] ?? null;
 
-        $status = Vote::hasVoted($pollId, $ip, $deviceToken);
+        $status = Vote::hasVoted($pollId, $ip, $deviceToken, $user['id'] ?? null);
         Response::json($status);
     }
 

@@ -20,6 +20,10 @@ class PollController {
     }
 
     public function show(Request $request, array $params): void {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $user = $_SESSION['user'] ?? null;
         $id = $params['id'] ?? $request->getParam('id');
         $poll = Poll::findByIdOrSlug($id);
 
@@ -28,7 +32,7 @@ class PollController {
         }
 
         $results = Vote::getPollResults($poll['id']);
-        $votedStatus = Vote::hasVoted($poll['id'], $request->getClientIp(), $request->getDeviceToken());
+        $votedStatus = Vote::hasVoted($poll['id'], $request->getClientIp(), $request->getDeviceToken(), $user['id'] ?? null);
 
         if ($request->isAjax()) {
             Response::json([

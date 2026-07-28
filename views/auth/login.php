@@ -38,42 +38,45 @@
 </div>
 
 <script>
-document.getElementById('login-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const alertBox = document.getElementById('auth-alert');
-    const btn = document.getElementById('login-btn');
+var loginForm = document.getElementById('login-form');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var alertBox = document.getElementById('auth-alert');
+        var btn = document.getElementById('login-btn');
 
-    btn.disabled = true;
-    btn.innerText = 'Signing In...';
+        btn.disabled = true;
+        btn.innerText = 'Signing In...';
 
-    const formData = new FormData(e.target);
+        var formData = new FormData(e.target);
 
-    try {
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: formData.get('email'),
-                password: formData.get('password')
-            })
-        });
+        try {
+            var res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                })
+            });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-            window.location.href = data.user.role === 'admin' ? '/admin' : '/';
-        } else {
+            var data = await res.json();
+            if (res.ok && data.success) {
+                window.location.href = data.user.role === 'admin' ? '/admin' : '/';
+            } else {
+                alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
+                alertBox.innerText = data.error || 'Authentication failed.';
+                alertBox.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = 'Sign In';
+            }
+        } catch (err) {
             alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-            alertBox.innerText = data.error || 'Authentication failed.';
+            alertBox.innerText = 'Network connection error.';
             alertBox.classList.remove('hidden');
             btn.disabled = false;
             btn.innerText = 'Sign In';
         }
-    } catch (err) {
-        alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-        alertBox.innerText = 'Network connection error.';
-        alertBox.classList.remove('hidden');
-        btn.disabled = false;
-        btn.innerText = 'Sign In';
-    }
-});
+    });
+}
 </script>

@@ -49,44 +49,47 @@
 </div>
 
 <script>
-document.getElementById('register-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const alertBox = document.getElementById('register-alert');
-    const btn = document.getElementById('register-btn');
+var registerForm = document.getElementById('register-form');
+if (registerForm) {
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var alertBox = document.getElementById('register-alert');
+        var btn = document.getElementById('register-btn');
 
-    btn.disabled = true;
-    btn.innerText = 'Creating Account...';
+        btn.disabled = true;
+        btn.innerText = 'Creating Account...';
 
-    const formData = new FormData(e.target);
+        var formData = new FormData(e.target);
 
-    try {
-        const res = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                displayName: formData.get('displayName'),
-                email: formData.get('email'),
-                county: formData.get('county'),
-                password: formData.get('password')
-            })
-        });
+        try {
+            var res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    displayName: formData.get('displayName'),
+                    email: formData.get('email'),
+                    county: formData.get('county'),
+                    password: formData.get('password')
+                })
+            });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-            window.location.href = '/';
-        } else {
+            var data = await res.json();
+            if (res.ok && data.success) {
+                window.location.href = '/';
+            } else {
+                alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
+                alertBox.innerText = data.error || 'Registration failed.';
+                alertBox.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = 'Register Account';
+            }
+        } catch (err) {
             alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-            alertBox.innerText = data.error || 'Registration failed.';
+            alertBox.innerText = 'Network connection error.';
             alertBox.classList.remove('hidden');
             btn.disabled = false;
             btn.innerText = 'Register Account';
         }
-    } catch (err) {
-        alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-        alertBox.innerText = 'Network connection error.';
-        alertBox.classList.remove('hidden');
-        btn.disabled = false;
-        btn.innerText = 'Register Account';
-    }
-});
+    });
+}
 </script>

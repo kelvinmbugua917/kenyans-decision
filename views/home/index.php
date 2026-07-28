@@ -205,60 +205,63 @@
 
 <script>
 // Interactive Client Voting Handler
-document.getElementById('featured-poll-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const form = e.target;
-    const btn = document.getElementById('vote-btn');
-    const alertBox = document.getElementById('vote-alert');
+var featuredForm = document.getElementById('featured-poll-form');
+if (featuredForm) {
+    featuredForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var form = e.target;
+        var btn = document.getElementById('vote-btn');
+        var alertBox = document.getElementById('vote-alert');
 
-    const formData = new FormData(form);
-    const selectedOption = formData.get('optionId');
+        var formData = new FormData(form);
+        var selectedOption = formData.get('optionId');
 
-    if (!selectedOption) {
-        alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200';
-        alertBox.innerText = 'Please select a candidate option before submitting your vote.';
-        alertBox.classList.remove('hidden');
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerHTML = 'Submitting Vote...';
-
-    try {
-        const response = await fetch('/api/vote', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': formData.get('csrf_token')
-            },
-            body: JSON.stringify({
-                pollId: formData.get('pollId'),
-                optionId: selectedOption,
-                county: formData.get('county'),
-                fingerprint: localStorage.getItem('kd_voter_fp') || 'fp_' + Math.random().toString(36).substr(2, 9)
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
-            alertBox.innerText = data.message || 'Your vote has been counted successfully!';
+        if (!selectedOption) {
+            alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200';
+            alertBox.innerText = 'Please select a candidate option before submitting your vote.';
             alertBox.classList.remove('hidden');
-            setTimeout(() => window.location.reload(), 1500);
-        } else {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = 'Submitting Vote...';
+
+        try {
+            var response = await fetch('/api/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': formData.get('csrf_token')
+                },
+                body: JSON.stringify({
+                    pollId: formData.get('pollId'),
+                    optionId: selectedOption,
+                    county: formData.get('county'),
+                    fingerprint: typeof getOrCreateVoterToken === 'function' ? getOrCreateVoterToken() : (localStorage.getItem('kd_voter_fp') || 'fp_default')
+                })
+            });
+
+            var data = await response.json();
+
+            if (response.ok && data.success) {
+                alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+                alertBox.innerText = data.message || 'Your vote has been counted successfully!';
+                alertBox.classList.remove('hidden');
+                setTimeout(function() { window.location.reload(); }, 1500);
+            } else {
+                alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
+                alertBox.innerText = data.error || 'An error occurred while submitting your vote.';
+                alertBox.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Anonymous Vote';
+            }
+        } catch (err) {
             alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-            alertBox.innerText = data.error || 'An error occurred while submitting your vote.';
+            alertBox.innerText = 'Network error. Please try again.';
             alertBox.classList.remove('hidden');
             btn.disabled = false;
             btn.innerHTML = 'Submit Anonymous Vote';
         }
-    } catch (err) {
-        alertBox.className = 'mt-4 p-3.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
-        alertBox.innerText = 'Network error. Please try again.';
-        alertBox.classList.remove('hidden');
-        btn.disabled = false;
-        btn.innerHTML = 'Submit Anonymous Vote';
-    }
-});
+    });
+}
 </script>

@@ -1,314 +1,119 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
-import { createServer as createViteServer } from 'vite';
-import { db } from './server/db';
-import { User } from './src/types';
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+const app = express();
+const PORT = 3000;
 
-  app.use(express.json());
+app.use(express.json());
 
-  // Helper middleware to extract user header/token if present
-  const getUserFromHeader = (req: express.Request): User | null => {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const userId = authHeader.replace('Bearer ', '').trim();
-      return db.getUserById(userId);
-    }
-    return null;
+// API endpoint to inspect PHP project files
+app.get('/api/files', (req, res) => {
+  const getFiles = (dir: string): string[] => {
+    let results: string[] = [];
+    const list = fs.readdirSync(dir);
+    list.forEach(file => {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        if (!file.startsWith('.') && file !== 'node_modules' && file !== 'dist') {
+          results = results.concat(getFiles(filePath));
+        }
+      } else {
+        results.push(filePath);
+      }
+    });
+    return results;
   };
 
-  // --- PUBLIC API ROUTES ---
-
-  // Analytics & Stats
-  app.get('/api/analytics', (req, res) => {
-    db.recordVisit();
-    const analytics = db.getAnalytics();
-    res.json(analytics);
-  });
-
-  // Track share
-  app.post('/api/share', (req, res) => {
-    db.recordShare();
-    res.json({ success: true });
-  });
-
-  // Polls List
-  app.get('/api/polls', (req, res) => {
-    const category = req.query.category as string | undefined;
-    const creatorType = req.query.creatorType as string | undefined;
-    const polls = db.getAllPolls(category, creatorType);
-    res.json(polls);
-  });
-
-  // Get single poll
-  app.get('/api/polls/:id', (req, res) => {
-    const poll = db.getPollById(req.params.id);
-    if (!poll) {
-      res.status(404).json({ error: 'Poll not found' });
-      return;
-    }
-    res.json(poll);
-  });
-
-  // Get poll results
-  app.get('/api/polls/:id/results', (req, res) => {
-    try {
-      const results = db.getPollResults(req.params.id);
-      res.json(results);
-    } catch (err: any) {
-      res.status(404).json({ error: err.message || 'Poll results not found' });
-    }
-  });
-
-  // Check voted status
-  app.get('/api/polls/:id/voted-status', (req, res) => {
-    const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
-    const fingerprint = (req.query.fingerprint as string) || 'anon_fp';
-    const status = db.getVotedStatus(req.params.id, clientIp, fingerprint);
-    res.json(status);
-  });
-
-  // Vote on poll
-  app.post('/api/polls/:id/vote', (req, res) => {
-    const { optionId, fingerprint, county, ageGroup } = req.body;
-    if (!optionId || !fingerprint) {
-      res.status(400).json({ error: 'Option ID and browser fingerprint are required' });
-      return;
-    }
-
-    const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
-    const userAgent = req.headers['user-agent'] || 'unknown';
-    const user = getUserFromHeader(req);
-
-    try {
-      const result = db.submitVote({
-        pollId: req.params.id,
-        optionId,
-        ip: clientIp,
-        fingerprint,
-        userAgent,
-        userId: user?.id,
-        county,
-        ageGroup
-      });
-      res.json(result);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Failed to submit vote' });
-    }
-  });
-
-  // Create community or official poll
-  app.post('/api/polls', (req, res) => {
-    const user = getUserFromHeader(req);
-    const { title, description, category, options, allowVoteChange, closingDate, isFeatured } = req.body;
-
-    if (!title || !options || !Array.isArray(options) || options.length < 2) {
-      res.status(400).json({ error: 'Poll title and at least two options are required' });
-      return;
-    }
-
-    try {
-      const poll = db.createPoll(
-        {
-          title,
-          description,
-          category,
-          options,
-          allowVoteChange: allowVoteChange ?? true,
-          closingDate,
-          isFeatured
-        },
-        user || undefined
-      );
-      res.json(poll);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message || 'Failed to create poll' });
-    }
-  });
-
-  // Discussions List
-  app.get('/api/discussions', (req, res) => {
-    const category = req.query.category as string | undefined;
-    const discussions = db.getDiscussions(category);
-    res.json(discussions);
-  });
-
-  // Create Discussion Post
-  app.post('/api/discussions', (req, res) => {
-    const user = getUserFromHeader(req);
-    if (!user) {
-      res.status(401).json({ error: 'You must be signed in to post a discussion' });
-      return;
-    }
-
-    const { title, content, category } = req.body;
-    if (!title || !content) {
-      res.status(400).json({ error: 'Title and content are required' });
-      return;
-    }
-
-    const post = db.createDiscussion(title, content, category || 'General Kenya', user);
-    res.json(post);
-  });
-
-  // Like Discussion
-  app.post('/api/discussions/:id/like', (req, res) => {
-    const likesCount = db.likeDiscussion(req.params.id);
-    res.json({ likesCount });
-  });
-
-  // Get Comments
-  app.get('/api/discussions/:id/comments', (req, res) => {
-    const comments = db.getComments(req.params.id);
-    res.json(comments);
-  });
-
-  // Add Comment
-  app.post('/api/discussions/:id/comments', (req, res) => {
-    const user = getUserFromHeader(req);
-    if (!user) {
-      res.status(401).json({ error: 'You must be signed in to add a comment' });
-      return;
-    }
-
-    const { content } = req.body;
-    if (!content) {
-      res.status(400).json({ error: 'Comment content is required' });
-      return;
-    }
-
-    const comment = db.addComment(req.params.id, content, user);
-    res.json(comment);
-  });
-
-  // Auth: Register
-  app.post('/api/auth/register', (req, res) => {
-    const { email, password, displayName, county } = req.body;
-    if (!email || !password || !displayName) {
-      res.status(400).json({ error: 'Email, password, and display name are required' });
-      return;
-    }
-
-    try {
-      const result = db.registerUser(email, password, displayName, county);
-      res.json(result);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Registration failed' });
-    }
-  });
-
-  // Auth: Login
-  app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required' });
-      return;
-    }
-
-    try {
-      const result = db.loginUser(email, password);
-      res.json(result);
-    } catch (err: any) {
-      res.status(401).json({ error: err.message || 'Login failed' });
-    }
-  });
-
-  // Auth: Get Current User
-  app.get('/api/auth/me', (req, res) => {
-    const user = getUserFromHeader(req);
-    if (!user) {
-      res.status(401).json({ error: 'Not authenticated' });
-      return;
-    }
-    res.json(user);
-  });
-
-  // Submit Report
-  app.post('/api/reports', (req, res) => {
-    const user = getUserFromHeader(req);
-    const { targetType, targetId, reason } = req.body;
-    if (!targetType || !targetId || !reason) {
-      res.status(400).json({ error: 'Target type, target ID, and reason are required' });
-      return;
-    }
-
-    const report = db.submitReport(targetType, targetId, reason, user?.id);
-    res.json(report);
-  });
-
-  // --- ADMIN ROUTES ---
-  const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const user = getUserFromHeader(req);
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
-    (req as any).adminUser = user;
-    next();
-  };
-
-  app.get('/api/admin/votes', requireAdmin, (req, res) => {
-    const votes = db.getRecentVotesForAudit();
-    res.json(votes);
-  });
-
-  app.get('/api/admin/reports', requireAdmin, (req, res) => {
-    const reports = db.getReports();
-    res.json(reports);
-  });
-
-  app.post('/api/admin/reports/:id', requireAdmin, (req, res) => {
-    const adminUser = (req as any).adminUser;
-    const { status } = req.body;
-    const report = db.updateReportStatus(req.params.id, status, adminUser);
-    res.json(report);
-  });
-
-  app.get('/api/admin/audit-logs', requireAdmin, (req, res) => {
-    const logs = db.getAuditLogs();
-    res.json(logs);
-  });
-
-  app.delete('/api/admin/discussions/:id', requireAdmin, (req, res) => {
-    const adminUser = (req as any).adminUser;
-    db.deleteDiscussion(req.params.id, adminUser);
-    res.json({ success: true });
-  });
-
-  app.delete('/api/admin/comments/:id', requireAdmin, (req, res) => {
-    const adminUser = (req as any).adminUser;
-    db.deleteComment(req.params.id, adminUser);
-    res.json({ success: true });
-  });
-
-  app.post('/api/admin/polls/:id/status', requireAdmin, (req, res) => {
-    const adminUser = (req as any).adminUser;
-    const { status } = req.body;
-    const updated = db.updatePoll(req.params.id, { status }, adminUser);
-    res.json(updated);
-  });
-
-  // --- VITE / STATIC SERVING ---
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+  try {
+    const files = getFiles(process.cwd())
+      .map(f => f.replace(process.cwd() + '/', ''))
+      .filter(f => !f.startsWith('node_modules') && !f.startsWith('dist') && !f.startsWith('.git'));
+    res.json({ files });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
+});
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-  });
-}
+// Serve PHP app preview dashboard
+app.get('*', (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kenyans Decision 🇰🇪 - Pure PHP/LAMP Stack Application</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6 sm:p-12">
+  <div class="max-w-4xl mx-auto space-y-8">
+    
+    <div class="border border-emerald-500/30 bg-emerald-950/30 p-8 rounded-3xl backdrop-blur-md">
+      <div class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-4">
+        Pure LAMP Stack Codebase
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Kenyans Decision 🇰🇪
+      </h1>
+      <p class="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
+        This repository contains a <strong>100% pure PHP/LAMP stack application</strong> for public opinion polling, civic discussions, and 2027 Kenyan national priority analytics.
+      </p>
+    </div>
 
-startServer();
+    <div class="bg-slate-800/80 border border-slate-700/80 p-6 sm:p-8 rounded-3xl space-y-6">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span>📂</span> Project File Architecture
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+        <div class="p-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+          <span class="text-emerald-400 font-bold block mb-1">/index.php</span>
+          <span class="text-slate-400">Front Controller & PDO Routing Entry Point</span>
+        </div>
+        <div class="p-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+          <span class="text-emerald-400 font-bold block mb-1">/.htaccess</span>
+          <span class="text-slate-400">Apache mod_rewrite clean URL rules</span>
+        </div>
+        <div class="p-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+          <span class="text-emerald-400 font-bold block mb-1">/app/</span>
+          <span class="text-slate-400">Controllers, Models, Middleware & Services</span>
+        </div>
+        <div class="p-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+          <span class="text-emerald-400 font-bold block mb-1">/views/</span>
+          <span class="text-slate-400">Tailwind CSS Views (Polls, Forum, Admin, Auth)</span>
+        </div>
+        <div class="p-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+          <span class="text-emerald-400 font-bold block mb-1">/config/</span>
+          <span class="text-slate-400">Database & Security Configuration Files</span>
+        </div>
+        <div class="p-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+          <span class="text-emerald-400 font-bold block mb-1">/database/</span>
+          <span class="text-slate-400">schema.sql & seed.sql schema dumps</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-slate-800/80 border border-slate-700/80 p-6 sm:p-8 rounded-3xl space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span>🚀</span> Ready for LAMP / Shared Hosting Deployment
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+        Upload these files directly to any PHP 8.2+ server running Apache and MySQL/MariaDB (e.g. cPanel, DirectAdmin, LAMP stack). Consult <code class="text-emerald-300">DEPLOYMENT.md</code> for setup instructions.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>`;
+  res.send(html);
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+});
+

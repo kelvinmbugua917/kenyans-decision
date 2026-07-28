@@ -111,32 +111,35 @@
 </div>
 
 <script>
-document.getElementById('new-topic-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
+var topicForm = document.getElementById('new-topic-form');
+if (topicForm) {
+    topicForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var formData = new FormData(e.target);
 
-    try {
-        const res = await fetch('/api/discussions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': formData.get('csrf_token')
-            },
-            body: JSON.stringify({
-                title: formData.get('title'),
-                content: formData.get('content'),
-                category: formData.get('category')
-            })
-        });
+        try {
+            var res = await fetch('/api/discussions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': formData.get('csrf_token')
+                },
+                body: JSON.stringify({
+                    title: formData.get('title'),
+                    content: formData.get('content'),
+                    category: formData.get('category')
+                })
+            });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-            window.location.reload();
-        } else {
-            alert(data.error || 'Failed to create topic');
+            var data = await res.json();
+            if (res.ok && data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to create topic');
+            }
+        } catch (err) {
+            alert('Network error');
         }
-    } catch (err) {
-        alert('Network error');
-    }
-});
+    });
+}
 </script>
