@@ -11,6 +11,11 @@
     <meta property="og:description" content="What Do Kenyans Think? Participate anonymously in public opinion polls and view real-time county breakdowns.">
     <meta property="og:type" content="website">
     
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇰🇪</text></svg>">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/favicon.png">
+    
     <!-- Tailwind CSS CDN (v3 for cross-browser & Windows 8 compatibility) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
