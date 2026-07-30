@@ -105,6 +105,21 @@ class HomeController {
             ];
         }
 
+        // Calculate adaptive trend period based on platform age
+        $firstVoteDate = $db->query("SELECT MIN(created_at) FROM votes")->fetchColumn();
+        $platformDaysOld = $firstVoteDate ? (int)floor((time() - strtotime($firstVoteDate)) / 86400) : 1;
+
+        if ($platformDaysOld >= 30) {
+            $trendPeriodLabel = "30-Day Shift";
+            $trendSuffix = "30d";
+        } elseif ($platformDaysOld >= 7) {
+            $trendPeriodLabel = "7-Day Shift";
+            $trendSuffix = "7d";
+        } else {
+            $trendPeriodLabel = "Since Launch";
+            $trendSuffix = "Since launch";
+        }
+
         $analyticsData = [
             'totalVotes' => $totalVotes,
             'votesToday' => $votesToday,
@@ -113,7 +128,9 @@ class HomeController {
             'representedCounties' => $representedCountiesCount,
             'totalPolls' => $totalPolls,
             'totalDiscussions' => $totalDiscussions,
-            'totalRegisteredUsers' => $totalUsers
+            'totalRegisteredUsers' => $totalUsers,
+            'trendPeriodLabel' => $trendPeriodLabel,
+            'trendSuffix' => $trendSuffix
         ];
 
         if ($request->isAjax()) {

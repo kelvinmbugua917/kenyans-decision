@@ -51,6 +51,26 @@ class PollController {
         }
     }
 
+    public function history(Request $request, array $params): void {
+        $id = $params['id'] ?? $request->getParam('id');
+        $poll = Poll::findByIdOrSlug($id);
+
+        if (!$poll) {
+            Response::error('Poll not found', 404);
+        }
+
+        $historyData = Vote::getPollHistory($poll['id']);
+
+        if ($request->isAjax()) {
+            Response::json($historyData);
+        } else {
+            Response::render('polls/history', [
+                'poll' => $poll,
+                'historyData' => $historyData
+            ], $poll['title'] . ' - Results History & Momentum');
+        }
+    }
+
     public function create(Request $request): void {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();

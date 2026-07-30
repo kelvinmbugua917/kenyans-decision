@@ -4,47 +4,61 @@
     <footer class="bg-slate-900 text-slate-400 text-xs sm:text-sm border-t border-slate-800 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <div class="md:col-span-2">
+                <div class="md:col-span-1">
                     <div class="flex items-center gap-2 mb-3">
                         <div class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center p-1">
                             <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                         </div>
                         <span class="font-extrabold text-white text-base tracking-tight">Kenyans<span class="text-emerald-400">Decision</span></span>
                     </div>
-                    <p class="text-slate-400 text-xs sm:text-sm max-w-md leading-relaxed">
-                        An independent, non-governmental public opinion and civic discussion platform for Kenyans. Empowering citizens to express opinions anonymously, track electoral sentiment, and discuss national affairs.
+                    <p class="text-slate-400 text-xs leading-relaxed mb-3">
+                        An independent, non-governmental public opinion and civic discussion platform for Kenyans. Empowering citizens to express opinions anonymously, track electoral sentiment across 47 counties, and discuss national affairs.
                     </p>
-                    <div class="mt-4 flex items-center gap-2 text-xs text-slate-400 bg-slate-800/80 border border-slate-700/60 rounded-lg p-2.5 max-w-md">
-                        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        <span>Protected by <strong>Anonymous Polling with Duplicate-Vote Mitigation</strong>. No personal identity data stored.</span>
+                    <div class="flex items-center gap-2 text-[11px] text-slate-400 bg-slate-800/80 border border-slate-700/60 rounded-lg p-2">
+                        <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <span>Keyed HMAC Cryptographic Vote Security</span>
                     </div>
                 </div>
 
                 <div>
-                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Platform Navigation</h4>
+                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Platform & Tools</h4>
                     <ul class="space-y-2 text-xs">
-                        <li><a href="/" class="hover:text-white transition-colors">Opinion Polls</a></li>
-                        <li><a href="/polls" class="hover:text-white transition-colors">Public Issues</a></li>
-                        <li><a href="/discussions" class="hover:text-white transition-colors">Civic Forum</a></li>
-                        <li><a href="/register" class="hover:text-white transition-colors">Create Custom Poll</a></li>
+                        <li><a href="/" class="hover:text-white transition-colors">National Dashboard</a></li>
+                        <li><a href="/polls" class="hover:text-white transition-colors">All Public Polls</a></li>
+                        <li><a href="/discussions" class="hover:text-white transition-colors">Civic Forum & Debates</a></li>
+                        <li><a href="/register" class="hover:text-white transition-colors">Create Community Poll</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Trust & Methodology</h4>
+                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">About & Methodology</h4>
                     <ul class="space-y-2 text-xs">
-                        <li><a href="/methodology" class="hover:text-white transition-colors">Polling Methodology</a></li>
-                        <li><a href="/privacy" class="hover:text-white transition-colors">Privacy & Security Disclosures</a></li>
-                        <li><a href="/admin" class="hover:text-white transition-colors">Append-Only Audit Logs</a></li>
+                        <li><a href="/about" class="hover:text-white transition-colors">About Kenyans Decision</a></li>
+                        <li><a href="/methodology" class="hover:text-white transition-colors">Polling & Sampling Methodology</a></li>
+                        <li><a href="/faq" class="hover:text-white transition-colors">FAQ & Verification Center</a></li>
+                        <li><a href="/contact" class="hover:text-white transition-colors">Contact Editorial Team</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Legal & Compliance</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="/privacy" class="hover:text-white transition-colors">Privacy & Data Policy</a></li>
+                        <li><a href="/terms" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="/cookies" class="hover:text-white transition-colors">Cookie Policy & Ad Disclosures</a></li>
+                        <li><a href="/sitemap.xml" target="_blank" class="hover:text-white transition-colors">XML Sitemap</a></li>
                     </ul>
                 </div>
             </div>
 
             <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-                <p>© <?= date('Y') ?> Kenyans Decision. Independent Public Opinion Platform. Made with pride in Kenya.</p>
-                <div class="flex items-center gap-4">
+                <p>© <?= date('Y') ?> Kenyans Decision. Independent Public Opinion Engine. Headquartered in Nairobi, Kenya.</p>
+                <div class="flex flex-wrap items-center gap-4">
                     <a href="/privacy" class="hover:text-white">Privacy</a>
-                    <a href="/methodology" class="hover:text-white">Methodology</a>
+                    <a href="/terms" class="hover:text-white">Terms</a>
+                    <a href="/cookies" class="hover:text-white">Cookies</a>
+                    <a href="/contact" class="hover:text-white">Contact</a>
+                    <a href="/sitemap.xml" target="_blank" class="hover:text-white">Sitemap</a>
                 </div>
             </div>
         </div>

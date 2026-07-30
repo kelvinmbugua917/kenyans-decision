@@ -47,23 +47,31 @@ $csrfToken = CsrfMiddleware::generateToken();
 $router->get('/', [\App\Controllers\HomeController::class, 'index']);
 $router->get('/polls', [\App\Controllers\PollController::class, 'index']);
 $router->get('/polls/{id}', [\App\Controllers\PollController::class, 'show']);
+$router->get('/polls/{id}/history', [\App\Controllers\PollController::class, 'history']);
 $router->get('/discussions', [\App\Controllers\DiscussionController::class, 'index']);
 $router->get('/discussions/{id}', [\App\Controllers\DiscussionController::class, 'show']);
 $router->get('/login', [\App\Controllers\AuthController::class, 'login']);
 $router->get('/register', [\App\Controllers\AuthController::class, 'register']);
 $router->get('/admin', [\App\Controllers\AdminController::class, 'dashboard'], [AdminMiddleware::class]);
 
-// Static Information Pages
-$router->get('/privacy', function() {
-    \App\Core\Response::render('info/privacy', [], 'Privacy & Security Policy - Kenyans Decision');
-});
-$router->get('/methodology', function() {
-    \App\Core\Response::render('info/methodology', [], 'Polling Methodology - Kenyans Decision');
-});
+// Static Information & Legal Pages
+$router->get('/about', [\App\Controllers\InfoController::class, 'about']);
+$router->get('/privacy', [\App\Controllers\InfoController::class, 'privacy']);
+$router->get('/terms', [\App\Controllers\InfoController::class, 'terms']);
+$router->get('/cookies', [\App\Controllers\InfoController::class, 'cookies']);
+$router->get('/methodology', [\App\Controllers\InfoController::class, 'methodology']);
+$router->get('/faq', [\App\Controllers\InfoController::class, 'faq']);
+$router->get('/contact', [\App\Controllers\InfoController::class, 'contact']);
+$router->post('/contact', [\App\Controllers\InfoController::class, 'contact']);
+
+// SEO Dynamic Sitemap & Robots.txt
+$router->get('/sitemap.xml', [\App\Controllers\SitemapController::class, 'index']);
+$router->get('/robots.txt', [\App\Controllers\SitemapController::class, 'robots']);
 
 // --- API ROUTES ---
 $router->get('/api/polls', [\App\Controllers\PollController::class, 'index']);
 $router->get('/api/polls/{id}', [\App\Controllers\PollController::class, 'show']);
+$router->get('/api/polls/{id}/history', [\App\Controllers\PollController::class, 'history']);
 $router->post('/api/polls', [\App\Controllers\PollController::class, 'create'], [AuthMiddleware::class]);
 
 $router->post('/api/vote', [\App\Controllers\VoteController::class, 'submit'], [RateLimitMiddleware::class]);

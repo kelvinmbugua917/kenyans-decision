@@ -24,10 +24,14 @@
             <?= nl2br(htmlspecialchars($discussion['content'])) ?>
         </div>
 
+        <?php 
+            $discCookie = 'kd_liked_' . preg_replace('/[^a-zA-Z0-9_]/', '', $discussion['id']);
+            $isLiked = !empty($_SESSION['liked_discussions'][$discussion['id']]) || isset($_COOKIE[$discCookie]);
+        ?>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <button id="like-btn" class="flex items-center gap-2 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl hover:bg-rose-100 transition-colors">
-                <svg class="w-4 h-4 fill-rose-500" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
-                <span id="likes-count"><?= $discussion['likesCount'] ?></span> Likes
+            <button id="like-btn" data-liked="<?= $isLiked ? 'true' : 'false' ?>" class="flex items-center gap-2 text-xs font-bold transition-all px-3.5 py-2 rounded-xl border <?= $isLiked ? 'text-rose-700 bg-rose-100 border-rose-300 shadow-2xs' : 'text-slate-700 bg-slate-50 border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200' ?>">
+                <svg class="w-4 h-4 <?= $isLiked ? 'fill-rose-600 text-rose-600' : 'fill-none stroke-current' ?>" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                <span id="likes-count"><?= $discussion['likesCount'] ?></span> <span id="like-label"><?= $isLiked ? 'Liked' : 'Like' ?></span>
             </button>
 
             <span class="text-xs text-slate-400 font-semibold"><?= count($comments) ?> Comments</span>
@@ -83,12 +87,19 @@ if (likeBtn) {
                 var countElem = document.getElementById('likes-count');
                 if (countElem) countElem.innerText = data.likesCount;
             }
-            if (data.alreadyLiked) {
-                likeBtn.classList.add('opacity-75', 'cursor-not-allowed', 'bg-rose-100');
-                likeBtn.title = "You have already liked this topic";
-                alert(data.message || 'You have already liked this topic.');
-            } else if (data.success) {
-                likeBtn.classList.add('bg-rose-100', 'border-rose-300');
+            var labelElem = document.getElementById('like-label');
+            var svgElem = likeBtn.querySelector('svg');
+            
+            if (data.liked) {
+                likeBtn.setAttribute('data-liked', 'true');
+                likeBtn.className = "flex items-center gap-2 text-xs font-bold transition-all px-3.5 py-2 rounded-xl border text-rose-700 bg-rose-100 border-rose-300 shadow-2xs";
+                if (labelElem) labelElem.innerText = 'Liked';
+                if (svgElem) svgElem.className.baseVal = "w-4 h-4 fill-rose-600 text-rose-600";
+            } else {
+                likeBtn.setAttribute('data-liked', 'false');
+                likeBtn.className = "flex items-center gap-2 text-xs font-bold transition-all px-3.5 py-2 rounded-xl border text-slate-700 bg-slate-50 border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200";
+                if (labelElem) labelElem.innerText = 'Like';
+                if (svgElem) svgElem.className.baseVal = "w-4 h-4 fill-none stroke-current";
             }
         } catch (err) {}
     });

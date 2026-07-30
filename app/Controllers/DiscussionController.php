@@ -108,25 +108,28 @@ class DiscussionController {
         }
 
         $cookieName = 'kd_liked_' . preg_replace('/[^a-zA-Z0-9_]/', '', $id);
+        $alreadyLiked = !empty($_SESSION['liked_discussions'][$id]) || isset($_COOKIE[$cookieName]);
 
-        if (!empty($_SESSION['liked_discussions'][$id]) || isset($_COOKIE[$cookieName])) {
-            $disc = Discussion::findById($id);
+        if ($alreadyLiked) {
+            unset($_SESSION['liked_discussions'][$id]);
+            setcookie($cookieName, '', time() - 3600, '/', '', false, false);
+            $newLikes = Discussion::unlike($id);
             Response::json([
-                'alreadyLiked' => true,
-                'likesCount' => $disc ? (int)$disc['likesCount'] : 0,
-                'message' => 'You have already liked this topic.'
+                'success' => true,
+                'liked' => false,
+                'likesCount' => $newLikes,
+                'message' => 'Unliked topic'
             ]);
-            return;
+        } else {
+            $_SESSION['liked_discussions'][$id] = true;
+            setcookie($cookieName, '1', time() + 31536000, '/', '', false, false);
+            $newLikes = Discussion::like($id);
+            Response::json([
+                'success' => true,
+                'liked' => true,
+                'likesCount' => $newLikes,
+                'message' => 'Liked topic!'
+            ]);
         }
-
-        $_SESSION['liked_discussions'][$id] = true;
-        setcookie($cookieName, '1', time() + 31536000, '/', '', false, false);
-
-        $newLikes = Discussion::like($id);
-        Response::json([
-            'success' => true,
-            'likesCount' => $newLikes,
-            'message' => 'Liked!'
-        ]);
     }
 }

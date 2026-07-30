@@ -77,6 +77,16 @@ class Discussion {
         return (int)$check->fetchColumn();
     }
 
+    public static function unlike(string $id): int {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("UPDATE discussions SET likes_count = GREATEST(0, likes_count - 1) WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+
+        $check = $db->prepare("SELECT likes_count FROM discussions WHERE id = :id");
+        $check->execute(['id' => $id]);
+        return (int)$check->fetchColumn();
+    }
+
     public static function delete(string $id): void {
         $db = Database::getInstance();
         $stmt = $db->prepare("DELETE FROM discussions WHERE id = :id");
