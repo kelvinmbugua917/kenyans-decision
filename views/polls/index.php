@@ -14,7 +14,7 @@
     <!-- Poll Category Filter Pills -->
     <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none text-xs font-semibold">
         <?php 
-        $categories = ['All', '2027 Elections', 'Cost of Living', 'Jobs & Economy', 'Healthcare', 'Technology', 'Governance & Corruption'];
+        $categories = ['All', 'Elections & Politics', 'Cost of Living', 'Jobs & Economy', 'Healthcare', 'Technology', 'Governance & Corruption'];
         foreach ($categories as $cat): 
             $isActive = ($currentCategory ?? 'All') === $cat;
         ?>

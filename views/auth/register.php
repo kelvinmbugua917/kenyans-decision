@@ -2,7 +2,9 @@
 
 <div class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
     <div class="text-center mb-6">
-        <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">🇰🇪</div>
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center p-2.5 mx-auto mb-3">
+            <svg class="w-full h-full text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
         <h1 class="text-xl font-black text-slate-900">Create Account & Polls</h1>
         <p class="text-xs text-slate-500 mt-1">Register to publish custom opinion polls and post in the civic forum.</p>
     </div>
@@ -26,7 +28,7 @@
             <label class="block text-xs font-bold text-slate-700 mb-1">Home County</label>
             <select name="county" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500">
                 <?php 
-                $counties = ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Kiambu', 'Machakos', 'Uasin Gishu', 'Kilifi', 'Nyeri', 'Garissa', 'Kakamega', 'Meru', 'Bungoma', 'Kajiado', 'Kisii'];
+                $counties = \App\Core\Counties::ALL;
                 foreach ($counties as $c): ?>
                     <option value="<?= $c ?>"><?= $c ?></option>
                 <?php endforeach; ?>

@@ -54,7 +54,7 @@
         </div>
 
         <div class="pt-4 text-center border-t border-slate-100">
-            <a href="/" class="text-xs font-bold text-emerald-600 hover:underline">← Back to 2027 Dashboard</a>
+            <a href="/" class="text-xs font-bold text-emerald-600 hover:underline">← Back to Dashboard</a>
         </div>
     </div>
 

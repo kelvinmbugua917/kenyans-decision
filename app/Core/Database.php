@@ -60,7 +60,7 @@ class Database {
             Database Setup / Connection Checklist
         </div>
         <div>
-            <h1 class="text-2xl font-bold text-white mb-2">Database Connection Pending 🇰🇪</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Database Connection Pending</h1>
             <p class="text-slate-300 text-sm leading-relaxed">
                 The application could not connect to the MySQL database host (<code class="text-amber-300 bg-slate-900/80 px-2 py-0.5 rounded">' . htmlspecialchars($db['host']) . '</code>).
             </p>

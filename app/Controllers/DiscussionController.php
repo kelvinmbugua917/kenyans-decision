@@ -93,12 +93,40 @@ class DiscussionController {
     }
 
     public function like(Request $request, array $params): void {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $id = $params['id'] ?? $request->getParam('id');
         if (empty($id)) {
             Response::json(['error' => 'Discussion ID required'], 400);
+            return;
         }
 
+        if (!isset($_SESSION['liked_discussions'])) {
+            $_SESSION['liked_discussions'] = [];
+        }
+
+        $cookieName = 'kd_liked_' . preg_replace('/[^a-zA-Z0-9_]/', '', $id);
+
+        if (!empty($_SESSION['liked_discussions'][$id]) || isset($_COOKIE[$cookieName])) {
+            $disc = Discussion::findById($id);
+            Response::json([
+                'alreadyLiked' => true,
+                'likesCount' => $disc ? (int)$disc['likesCount'] : 0,
+                'message' => 'You have already liked this topic.'
+            ]);
+            return;
+        }
+
+        $_SESSION['liked_discussions'][$id] = true;
+        setcookie($cookieName, '1', time() + 31536000, '/', '', false, false);
+
         $newLikes = Discussion::like($id);
-        Response::json(['likesCount' => $newLikes]);
+        Response::json([
+            'success' => true,
+            'likesCount' => $newLikes,
+            'message' => 'Liked!'
+        ]);
     }
 }

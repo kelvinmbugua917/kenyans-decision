@@ -5,7 +5,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>
             <h1 class="text-2xl font-black text-slate-900">Civic Discussions & Public Forum</h1>
-            <p class="text-slate-600 text-xs sm:text-sm mt-1">Constructive debate on governance, economy, 2027 elections, and social policy.</p>
+            <p class="text-slate-600 text-xs sm:text-sm mt-1">Constructive debate on governance, economy, elections, and social policy.</p>
         </div>
 
         <?php if (!empty($_SESSION['user'])): ?>
@@ -22,7 +22,7 @@
     <!-- Category Pills -->
     <div class="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-semibold">
         <?php 
-        $categories = ['All', '2027 Elections', 'Cost of Living', 'Healthcare', 'Governance & Corruption', 'Technology'];
+        $categories = ['All', 'Elections & Politics', 'Cost of Living', 'Healthcare', 'Governance & Corruption', 'Technology'];
         foreach ($categories as $cat): 
             $isActive = ($currentCategory ?? 'All') === $cat;
         ?>
@@ -90,7 +90,7 @@
             <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Category</label>
                 <select name="category" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500">
-                    <option value="2027 Elections">2027 Elections</option>
+                    <option value="Elections & Politics">Elections & Politics</option>
                     <option value="Cost of Living">Cost of Living</option>
                     <option value="Healthcare">Healthcare</option>
                     <option value="Governance & Corruption">Governance & Corruption</option>

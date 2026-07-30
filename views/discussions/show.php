@@ -83,6 +83,13 @@ if (likeBtn) {
                 var countElem = document.getElementById('likes-count');
                 if (countElem) countElem.innerText = data.likesCount;
             }
+            if (data.alreadyLiked) {
+                likeBtn.classList.add('opacity-75', 'cursor-not-allowed', 'bg-rose-100');
+                likeBtn.title = "You have already liked this topic";
+                alert(data.message || 'You have already liked this topic.');
+            } else if (data.success) {
+                likeBtn.classList.add('bg-rose-100', 'border-rose-300');
+            }
         } catch (err) {}
     });
 }
