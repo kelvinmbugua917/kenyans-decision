@@ -97,4 +97,10 @@ class Request {
                strtolower($this->server['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' ||
                str_contains($this->server['HTTP_ACCEPT'] ?? '', 'application/json');
     }
+
+    public function isHttps(): bool {
+        return (!empty($this->server['HTTPS']) && $this->server['HTTPS'] !== 'off') ||
+               ($this->server['SERVER_PORT'] ?? 80) == 443 ||
+               ($this->server['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+    }
 }

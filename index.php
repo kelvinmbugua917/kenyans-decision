@@ -23,15 +23,17 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Start Session
+// Start Session with Secure Cookie Attributes
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', '1');
     ini_set('session.use_strict_mode', '1');
+    ini_set('session.cookie_samesite', 'Lax');
     session_start();
 }
 
 use App\Core\Router;
 use App\Core\Request;
+use App\Middleware\SecurityMiddleware;
 use App\Middleware\CsrfMiddleware;
 use App\Middleware\RateLimitMiddleware;
 use App\Middleware\AuthMiddleware;
@@ -39,6 +41,9 @@ use App\Middleware\AdminMiddleware;
 
 $router = new Router();
 $request = new Request();
+
+// Apply Security Headers (CSP, HSTS, X-Content-Type-Options, etc.)
+(new SecurityMiddleware())->handle($request);
 
 // Generate CSRF Token for Forms
 $csrfToken = CsrfMiddleware::generateToken();

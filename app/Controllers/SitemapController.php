@@ -13,13 +13,15 @@ class SitemapController {
         $host = $_SERVER['HTTP_HOST'] ?? 'kenyansdecision.online';
         $baseUrl = $scheme . '://' . $host;
 
-        $db = Database::getInstance();
-
-        // Fetch dynamic polls
-        $polls = $db->query("SELECT id, slug, updated_at, created_at FROM polls ORDER BY created_at DESC")->fetchAll() ?: [];
-
-        // Fetch dynamic discussions
-        $discussions = $db->query("SELECT id, updated_at, created_at FROM discussions ORDER BY created_at DESC")->fetchAll() ?: [];
+        $polls = [];
+        $discussions = [];
+        try {
+            $db = Database::getInstance();
+            $polls = $db->query("SELECT id, slug, updated_at, created_at FROM polls ORDER BY created_at DESC")->fetchAll() ?: [];
+            $discussions = $db->query("SELECT id, updated_at, created_at FROM discussions ORDER BY created_at DESC")->fetchAll() ?: [];
+        } catch (\Throwable $e) {
+            // Soft fallback to static routes if DB connection is unavailable
+        }
 
         $staticPages = [
             '/' => ['priority' => '1.0', 'changefreq' => 'hourly'],

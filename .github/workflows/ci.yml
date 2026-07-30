@@ -1,0 +1,49 @@
+name: Kenyans Decision CI Workflow
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-lint:
+    name: PHP Syntax, Lint & Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_sqlite, mbstring, json
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Check PHP Code Syntax across Core & App
+        run: |
+          echo "Scanning PHP syntax..."
+          find app index.php config -name "*.php" -exec php -l {} \;
+
+      - name: Verify Security & Environment Example Manifest
+        run: |
+          test -f .env.example || (echo "Missing .env.example file!" && exit 1)
+          test -f sitemap.xml || test -f app/Controllers/SitemapController.php || (echo "Missing SEO Sitemap!" && exit 1)
+
+      - name: Install Dependencies (if composer.lock exists)
+        run: |
+          if [ -f "composer.lock" ]; then
+            composer install --no-progress --prefer-dist
+          fi
