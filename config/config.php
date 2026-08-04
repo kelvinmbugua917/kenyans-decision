@@ -18,17 +18,17 @@ return [
     'env' => $isLocal ? 'development' : 'production',
 
     'db' => [
-        'host' => $isLocal ? '127.0.0.1' : (getenv('DB_HOST') ?: 'sql212.infinityfree.com'),
+        'host' => $isLocal ? '127.0.0.1' : (getenv('DB_HOST') ?: 'db_host'),
         'port' => getenv('DB_PORT') ?: '3306',
-        'name' => $isLocal ? 'kenyans_decision_db' : (getenv('DB_NAME') ?: 'if0_42519089_kenyans_decision'),
-        'user' => $isLocal ? 'root' : (getenv('DB_USER') ?: 'if0_42519089'),
-        'password' => $isLocal ? '' : (getenv('DB_PASSWORD') ?: 'YqCFViAdw83QjP'),
+        'name' => $isLocal ? 'kenyans_decision_db' : (getenv('DB_NAME') ?: 'Db_name'),
+        'user' => $isLocal ? 'root' : (getenv('DB_USER') ?: 'db_usrname'),
+        'password' => $isLocal ? '' : (getenv('DB_PASSWORD') ?: 'pass'),
         'charset' => 'utf8mb4',
     ],
 
     'security' => [
-        'app_key' => getenv('APP_KEY') ?: 'kd_secret_app_key_84920492019402940294_2027',
-        'vote_hmac_key' => getenv('VOTE_HMAC_KEY') ?: 'kd_vote_hmac_secret_key_993848201948291_2027',
+        'app_key' => getenv('APP_KEY') ?: 'secret_key',
+        'vote_hmac_key' => getenv('VOTE_HMAC_KEY') ?: 'secret_key',
         'session_lifetime' => 86400 * 7,
     ],
 
